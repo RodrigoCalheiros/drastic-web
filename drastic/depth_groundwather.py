@@ -1,5 +1,15 @@
 from osgeo import gdal
-from PyQt4.QtCore import *
+from PyQt5.QtCore import *
+from qgis.core import *
+
+import sys, os
+from qgis.core import QgsProcessingRegistry
+from qgis.analysis import QgsNativeAlgorithms
+from qgis.core import (QgsApplication)
+QgsApplication.setPrefixPath('/usr', True)
+qgs = QgsApplication([], False)
+qgs.initQgis()
+sys.path.append('/usr/share/qgis/python/plugins/')
 from processing.core.Processing import Processing
 
 def convert(self):    
@@ -317,11 +327,21 @@ def convert(self):
     QMessageBox.information(self, self.tr( "Finished" ), self.tr( "Depth completed." ) ) 
     self.buttonBox.button(QDialogButtonBox.Ok).setDefault(True)
 
-def convert_mdt(input_mdt, max_depth, distance, size, ratings, output_path):
-    outPath2 = output_path 
+def convert_mdt(input_mdt, max_depth, distance, min_size, ratings, output_path):
+    
     # read raster
     inputRaster = input_mdt
-    layer_raster = QgsRasterLayer(unicode(inputRaster).encode('utf8'), inputRaster , "gdal")      
+    # read maximum depth
+    max_depth = max_depth
+    # read distance
+    distance = distance   
+    # minimum size
+    size = min_size
+    outPath2 = output_path 
+
+    gdal.AllRegister()
+
+    layer_raster = QgsRasterLayer(inputRaster, os.path.basename(inputRaster), "gdal")
     data_mdt = layer_raster.dataProvider()
     extent_raster = data_mdt.extent()
     xmin_raster = extent_raster.xMinimum()
@@ -330,106 +350,105 @@ def convert_mdt(input_mdt, max_depth, distance, size, ratings, output_path):
     ymax_raster = extent_raster.yMaximum()
     extent_raster_str = str(xmin_raster) + "," + str(xmax_raster) + "," + str(ymin_raster) + "," + str(ymax_raster)     
     cellSize = layer_raster.rasterUnitsPerPixelX()
+
+    # QMessageBox.about(self, "teste", str(inputRaster))
+    # QMessageBox.about(self, "teste", str(extent_raster_str))
+    # QMessageBox.about(self, "teste", str(cellSize))
     
-    
-    # read maximum depth
-    max_depth = max_depth
-    # read distance
-    distance = distance   
-    # minimum size
-    size = size
-    
+   
     Processing.initialize()
     # grid directory (qgis2)
     # generate stream segments
-    stream = QFileInfo(QgsApplication.qgisUserDbFilePath()).path() + "/stream" 
-    Processing.runAlgorithm("grass:r.watershed",None, inputRaster, None, None, None, None, size, 0,5,300,False, True, False, False, extent_raster_str, cellSize, None, None, None, stream, None, None, None, None)
-    stream_tif = stream + "." + "tif"
+    #stream = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/stream.tif"
+    stream = "/home/rodrigo/projetos/drastic-web-back/drastic/resultados" +  "/stream.tif"
+    #QMessageBox.about(self, "teste", str(stream))
+    Processing.runAlgorithm("grass7:r.watershed",{'elevation': inputRaster, 'depression': None, 'flow': None, 'disturbed_land': None, 'blocking': None, 'threshold': size, 'max_slope_length': None, 'convergence': 5, 'memory': 300, '-s': False, '-m': False, '-4': False, '-a': False, '-b': False, 'accumulation': None, 'drainage': None, 'basin': None, 'stream': stream,'half_basin': None, 'length_slope': None, 'slope_steepness': None, 'tci': None, 'spi': None, 'GRASS_REGION_PARAMETER': extent_raster_str + '[EPSG:3763]', 'GRASS_REGION_CELLSIZE_PARAMETER': cellSize, 'GRASS_RASTER_FORMAT_OPT': '', 'GRASS_RASTER_FORMAT_META': ''})
     
+
     # condition stream > 1 to have the lines with value 1
-    stream_ones = QFileInfo(QgsApplication.qgisUserDbFilePath()).path() + "/stream_ones" 
-    
-    Processing.runAlgorithm("gdalogr:rastercalculator", None, stream_tif, "1",None,"1",None,"1",None,"1",None,"1",None,"1","A>1","-9999",5,"", stream_ones)
-    stream_ones_str = stream_ones + "." + "tif"
-    
+    #stream_ones = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/streamones.tif"
+    stream_ones = "/home/rodrigo/projetos/drastic-web-back/drastic/resultados" +  "/ones.tif"
+    result = Processing.runAlgorithm("gdal:rastercalculator",{'INPUT_A': stream, 'BAND_A': 1, 'INPUT_B': None, 'BAND_B': -1, 'INPUT_C': None, 'BAND_C': -1, 'INPUT_D': None, 'BAND_D': -1, 'INPUT_E': None, 'BAND_E': -1, 'INPUT_F': None, 'BAND_F': -1, 'FORMULA': "A>1",'NO_DATA': None, 'RTYPE': 5, 'EXTRA': '', 'OPTIONS': '', 'OUTPUT': stream_ones })
+    print (result)
+
     # raster distance
-    raster_distance = QFileInfo(QgsApplication.qgisUserDbFilePath()).path() + "/raster_distance.sdat" 
+    raster_distance = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/raster_distance.tif"
+    #Processing.runAlgorithm("saga:proximitygrid", None, str(stream_ones_str), 3, str(raster_distance), None, None)
+    Processing.runAlgorithm("gdal:proximity", {'INPUT': stream_ones, 'BAND': 1, 'VALUES': '1', 'UNITS': 0, 'MAX_DISTANCE': 0, 'REPLACE': 0, 'NODATA': 0, 'OPTIONS': '', 'DATA_TYPE': 5, 'OUTPUT': str(raster_distance)})
     
-    Processing.runAlgorithm("saga:proximitygrid", None, stream_ones_str, raster_distance, None, None)
-    
+    """
     # condition distance >=  200, always maximum depth meters
-    dist_major_200 = QFileInfo(QgsApplication.qgisUserDbFilePath()).path() + "/dist_major_200"
+    dist_major_200 = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/dist_major_200.tif"
+    Processing.runAlgorithm("gdal:rastercalculator",{'INPUT_A': raster_distance, 'BAND_A': 1, 'INPUT_B': None, 'BAND_B': -1, 'INPUT_C': None, 'BAND_C': -1, 'INPUT_D': None, 'BAND_D': -1, 'INPUT_E': None, 'BAND_E': -1, 'INPUT_F': None, 'BAND_F': -1, 'FORMULA': "A>="+str(distance),'NO_DATA': None, 'RTYPE': 5, 'EXTRA': '', 'OPTIONS': '', 'OUTPUT': dist_major_200})
     
-    Processing.runAlgorithm("gdalogr:rastercalculator", None, raster_distance, "1",None,"1",None,"1",None,"1",None,"1",None,"1","A>="+str(distance),"-9999",5,"", dist_major_200)
-    dist_major_200_str = dist_major_200 + "." + "tif"  
+    dist_multiplication = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/dist_multiplication.tif"
     
-    dist_multiplication = QFileInfo(QgsApplication.qgisUserDbFilePath()).path() + "/dist_multiplication"
-    
-    Processing.runAlgorithm("gdalogr:rastercalculator", None, dist_major_200_str, "1",None,"1",None,"1",None,"1",None,"1",None,"1","A*"+str(max_depth),"-9999",5,"", dist_multiplication)
-    dist_multiplication_str = dist_multiplication + "." + "tif"   
+    Processing.runAlgorithm("gdal:rastercalculator", {'INPUT_A': dist_major_200, 'BAND_A': 1, 'INPUT_B': None, 'BAND_B': -1, 'INPUT_C': None, 'BAND_C': -1, 'INPUT_D': None,
+        'BAND_D': -1, 'INPUT_E': None, 'BAND_E': -1, 'INPUT_F': None, 'BAND_F': -1, 'FORMULA':"A*"+str(max_depth),'NO_DATA': None, 'RTYPE': 5, 'EXTRA': '', 'OPTIONS': '',
+        'OUTPUT': dist_multiplication})
     
     # condition distance < 200, inteprolation between 0 and maximum depth
-    dist_minor_200 = QFileInfo(QgsApplication.qgisUserDbFilePath()).path() + "/dist_minor_200"
+    dist_minor_200 = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/dist_minor_200.tif"
     
-    Processing.runAlgorithm("gdalogr:rastercalculator", None, raster_distance, "1",None,"1",None,"1",None,"1",None,"1",None,"1","A<"+str(distance),"-9999",5,"", dist_minor_200)
-    dist_minor_200_str = dist_minor_200 + "." + "tif"  
+    Processing.runAlgorithm("gdal:rastercalculator", {'INPUT_A': raster_distance, 'BAND_A': 1, 'INPUT_B': None, 'BAND_B': -1, 'INPUT_C': None, 'BAND_C': -1, 'INPUT_D': None,
+    'BAND_D': -1, 'INPUT_E': None, 'BAND_E': -1, 'INPUT_F': None, 'BAND_F': -1, 'FORMULA':"A<"+str(distance),'NO_DATA': None, 'RTYPE': 5, 'EXTRA': '', 'OPTIONS': '',
+    'OUTPUT': dist_minor_200})
     
     # multiplication by the raster distance
-    dist_multiplication_dist = QFileInfo(QgsApplication.qgisUserDbFilePath()).path() + "/dist_multiplication_dist"
+    dist_multiplication_dist = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/dist_multiplication_dist.tif"
     
-    Processing.runAlgorithm("gdalogr:rastercalculator", None, dist_minor_200_str, "1",raster_distance,"1",None,"1",None,"1",None,"1",None,"1","A*B","-9999",5,"", dist_multiplication_dist)
-    dist_multiplication_dist_str = dist_multiplication_dist + "." + "tif"   
+    Processing.runAlgorithm("gdal:rastercalculator", {'INPUT_A': dist_minor_200, 'BAND_A': 1, 'INPUT_B':raster_distance,'BAND_B': 1, 'INPUT_C': None, 'BAND_C': -1, 'INPUT_D': None,
+        'BAND_D': -1, 'INPUT_E': None, 'BAND_E': -1, 'INPUT_F': None, 'BAND_F': -1, 'FORMULA':"A*B",'NO_DATA': None, 'RTYPE': 5, 'EXTRA': '', 'OPTIONS': '',
+        'OUTPUT': dist_multiplication_dist})
     
     # interpolation between 0 and distance
-    interpolation_dist = QFileInfo(QgsApplication.qgisUserDbFilePath()).path() + "/interpolation_dist"
+    interpolation_dist = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/interpolation_dist.tif"
     
-    Processing.runAlgorithm("gdalogr:rastercalculator", None,dist_multiplication_dist_str , "1",None,"1",None,"1",None,"1",None,"1",None,"1","A*"+str(max_depth)+"/"+str(distance),"-9999",5,"", interpolation_dist)
-    interpolation_dist_str = interpolation_dist + "." + "tif"   
+    Processing.runAlgorithm("gdal:rastercalculator", {'INPUT_A':dist_multiplication_dist, 'BAND_A': 1, 'INPUT_B':None ,'BAND_B': -1, 'INPUT_C': None, 'BAND_C': -1, 'INPUT_D': None,
+        'BAND_D': -1, 'INPUT_E': None, 'BAND_E': -1, 'INPUT_F': None, 'BAND_F': -1, 'FORMULA':"A*"+str(max_depth)+"/"+str(distance),'NO_DATA': None, 'RTYPE': 5, 'EXTRA': '', 'OPTIONS': '',
+        'OUTPUT': interpolation_dist})
     
     # depth surface = sum of two conditions
-    depth_surface = QFileInfo(QgsApplication.qgisUserDbFilePath()).path() + "/depth_surface"
+    depth_surface = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/depth_surface.tif"
     
-    Processing.runAlgorithm("gdalogr:rastercalculator", None,dist_multiplication_str , "1",interpolation_dist_str,"1",None,"1",None,"1",None,"1",None,"1","A+B","-9999",5,"", depth_surface)
-    depth_surface_tif = depth_surface + "." + "tif"        
+    Processing.runAlgorithm("gdal:rastercalculator", {'INPUT_A':dist_multiplication , 'BAND_A': 1, 'INPUT_B':interpolation_dist,'BAND_B': 1, 'INPUT_C': None, 'BAND_C': -1, 'INPUT_D': None,
+        'BAND_D': -1, 'INPUT_E': None, 'BAND_E': -1, 'INPUT_F': None, 'BAND_F': -1, 'FORMULA':"A+B",'NO_DATA': None, 'RTYPE': 5, 'EXTRA': '', 'OPTIONS': '',
+        'OUTPUT': depth_surface})
     
     # indexes for topography
+    numberRows = int(self.tableWidget.rowCount())
+    numberColumns = int(self.tableWidget.columnCount())
+    classes = ''
     lista = []
-    intervalos = ""
-    for linha_ratings in range(len(ratings)):
-        intervalos += ','.join(map(str, ratings[linha_ratings]))
-        if linha_ratings < (len(ratings)-1):
-            intervalos += ','
-    
-    depth_reclassify = QFileInfo(QgsApplication.qgisUserDbFilePath()).path() + "/depth_reclassify.sdat"
-    Processing.runAlgorithm("saga:reclassifygridvalues", None, depth_surface_tif, 2, 0.0, 1.0, 0, 0.0, 1.0, 2.0, 0, intervalos, 0, True, 0.0, True, 0.0, depth_reclassify)
-    #depth_rec_idw = depth_reclassify + "." + "tif"
-    
-    Processing.runAlgorithm("grass:r.surf.idw", None, depth_reclassify, 12, False, extent_raster_str, cellSize, outPath2)
+    for i in range(0,numberRows):
+        for j in range(0,numberColumns):
+            self.line = self.tableWidget.item(i,j)
+            lista = lista + [self.line.text()]
+            string = ","
+            intervalos = string.join(lista)
+    results = list(map(float, lista))
 
-    
-    
+    Processing.runAlgorithm("saga:reclassifyvalues",{'INPUT': depth_surface, 'METHOD':2, 'OLD':0, 'NEW':1, 'SOPERATOR':0, 'MIN':0, 'MAX':1,
+                                                        'RNEW':2, 'ROPERATOR':0, 'RETAB':results, 'TOPERATOR':0, 'NODATAOPT':True, 'NODATA':0,
+                                                        'OTHEROPT':True, 'OTHERS':0, 'RESULT':outPath2})
+
+
     # add result into canvas
-    file_info_norm = QFileInfo(outPath2)
-    if file_info_norm.exists():
-        layer_name_norm = file_info_norm.baseName()
-    else:
-        return False
-    rlayer_new_norm = QgsRasterLayer(outPath2, layer_name_norm)
-    if rlayer_new_norm.isValid():
-        QgsMapLayerRegistry.instance().addMapLayer(rlayer_new_norm)
-        layer_norm = QgsMapCanvasLayer(rlayer_new_norm)
-        layerList_norm = [layer_norm]
-        extent_norm = self.iface.canvas.setExtent(rlayer_new_norm.extent())
-        self.iface.canvas.setLayerSet(layerList_norm)
-        self.iface.canvas.setVisible(True)         
-        return True
-    else:
-        return False                 
+    file_info_norm = QFileInfo(str(outPath2))
+    #QMessageBox.about(self, "teste", str(file_info_norm))
+    rlayer_new_norm = QgsRasterLayer(outPath2, file_info_norm.fileName(), 'gdal')
+    #QMessageBox.about(self, "teste", str(rlayer_new_norm))
+    QgsProject.instance().addMapLayer(rlayer_new_norm)
+    self.iface.canvas.setExtent(rlayer_new_norm.extent())
+    # set the map canvas layer set
+    self.iface.canvas.setLayers([rlayer_new_norm])
+    """
 
-input_mdt = ".\Dados\d.sdat"
+
+input_mdt = "/home/rodrigo/projetos/drastic-web-back/drastic/Dados/d.sdat"
 max_depth = 20
 distance = 200
-size = 50
+min_size = 50
 ratings = [ [0, 1.5, 10], [1.5, 4.6, 9], [4.6, 9.1, 7], [9.1, 15.2, 5], [15.2, 22.9, 3], [22.9, 30.5, 2], [30.5, 200, 1]]
-output_path = ".\Dados\dem_rodrigo.tif"
-convert_mdt(input_mdt, max_depth, distance, size, ratings, output_path)
+output_path = "/home/rodrigo/projetos/drastic-web-back/drastic/Dados/dem_rodrigo.tif"
+convert_mdt(input_mdt, max_depth, distance, min_size, ratings, output_path)
