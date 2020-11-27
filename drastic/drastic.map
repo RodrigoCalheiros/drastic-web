@@ -1,0 +1,50 @@
+MAP
+    CONFIG "MS_ERRORFILE" "/var/www/mapserv/log.txt"
+    DEBUG 5
+    NAME "MAPSERVER_DRASTIC"
+    STATUS ON
+    SIZE 800 600
+    EXTENT -180 -90 180 90
+    UNITS METERS
+    SHAPEPATH "/home/rodrigo/projetos/mapserv/"
+    IMAGECOLOR 155 155 155
+
+    WEB
+        METADATA
+            "wms_title"             "MapServer Drastic"
+            "wms_onlineresource"    "http://http://localhost/cgi-bin/mapserv?map=/var/www/mapserv/drastic.map"
+            "wms_enable_request"    "*"
+            "wms_srs"               "EPSG:4326"
+        END
+    END
+
+    PROJECTION
+        "init=epsg:4326"
+    END
+
+    LAYER
+        NAME "stream_teste"
+        DATA "teste.tif"
+        TYPE RASTER
+        STATUS ON
+        CLASSITEM "[pixel]"
+        # class using simple string comparison, equivalent to ([pixel] = 0)
+        CLASS
+            STYLE
+            COLOR 0 0 0
+            END
+        END
+    END
+
+    LAYER
+        NAME "caop"
+        TYPE POLYGON
+        STATUS ON
+        DATA "/caop/Cont_AAD_CAOP2019.shp"
+        CLASS
+            STYLE
+                COLOR 0 0 0
+            END
+        END
+    END
+END

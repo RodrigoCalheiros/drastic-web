@@ -1,14 +1,11 @@
+import sys, os
 from osgeo import gdal
 from PyQt5.QtCore import *
-from qgis.core import *
-
-import sys, os
 from qgis.core import QgsProcessingRegistry
 from qgis.analysis import QgsNativeAlgorithms
-from qgis.core import (QgsApplication)
+from qgis.core import *
 QgsApplication.setPrefixPath('/usr', True)
-qgs = QgsApplication([], False)
-qgs.initQgis()
+
 sys.path.append('/usr/share/qgis/python/plugins/')
 from processing.core.Processing import Processing
 
@@ -329,6 +326,12 @@ def convert(self):
 
 def convert_mdt(input_mdt, max_depth, distance, min_size, ratings, output_path):
     
+    qgs = QgsApplication([], False)
+    qgs.initQgis()
+    Processing.initialize()
+    QgsApplication.processingRegistry().addProvider(QgsNativeAlgorithms())
+    gdal.AllRegister()
+
     # read raster
     inputRaster = input_mdt
     # read maximum depth
@@ -339,7 +342,7 @@ def convert_mdt(input_mdt, max_depth, distance, min_size, ratings, output_path):
     size = min_size
     outPath2 = output_path 
 
-    gdal.AllRegister()
+    
 
     layer_raster = QgsRasterLayer(inputRaster, os.path.basename(inputRaster), "gdal")
     data_mdt = layer_raster.dataProvider()
@@ -355,21 +358,24 @@ def convert_mdt(input_mdt, max_depth, distance, min_size, ratings, output_path):
     # QMessageBox.about(self, "teste", str(extent_raster_str))
     # QMessageBox.about(self, "teste", str(cellSize))
     
-   
-    Processing.initialize()
+    for alg in QgsApplication.processingRegistry().algorithms():
+        print(alg.id(), "->", alg.displayName())
+    
     # grid directory (qgis2)
     # generate stream segments
-    #stream = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/stream.tif"
-    stream = "/home/rodrigo/projetos/drastic-web-back/drastic/resultados" +  "/stream.tif"
+    stream = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/stream.tif"
+    #stream = "/home/rodrigo/projetos/drastic-web-back/drastic/resultados" +  "/stream.tif"
     #QMessageBox.about(self, "teste", str(stream))
     Processing.runAlgorithm("grass7:r.watershed",{'elevation': inputRaster, 'depression': None, 'flow': None, 'disturbed_land': None, 'blocking': None, 'threshold': size, 'max_slope_length': None, 'convergence': 5, 'memory': 300, '-s': False, '-m': False, '-4': False, '-a': False, '-b': False, 'accumulation': None, 'drainage': None, 'basin': None, 'stream': stream,'half_basin': None, 'length_slope': None, 'slope_steepness': None, 'tci': None, 'spi': None, 'GRASS_REGION_PARAMETER': extent_raster_str + '[EPSG:3763]', 'GRASS_REGION_CELLSIZE_PARAMETER': cellSize, 'GRASS_RASTER_FORMAT_OPT': '', 'GRASS_RASTER_FORMAT_META': ''})
     
+    stream_teste= "/home/rodrigo/projetos/drastic-web-back/drastic/resultados/teste.tif"
+    result = Processing.runAlgorithm("qgis:rastercalculator", {'LAYERS': stream, 'EXPRESSION': '(\"stream@1\" > 100)','OUTPUT': stream_teste })
+    print (result)
 
     # condition stream > 1 to have the lines with value 1
-    #stream_ones = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/streamones.tif"
-    stream_ones = "/home/rodrigo/projetos/drastic-web-back/drastic/resultados" +  "/ones.tif"
-    result = Processing.runAlgorithm("gdal:rastercalculator",{'INPUT_A': stream, 'BAND_A': 1, 'INPUT_B': None, 'BAND_B': -1, 'INPUT_C': None, 'BAND_C': -1, 'INPUT_D': None, 'BAND_D': -1, 'INPUT_E': None, 'BAND_E': -1, 'INPUT_F': None, 'BAND_F': -1, 'FORMULA': "A>1",'NO_DATA': None, 'RTYPE': 5, 'EXTRA': '', 'OPTIONS': '', 'OUTPUT': stream_ones })
-    print (result)
+    stream_ones = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/stream_ones.tif"
+    #stream_ones = "/home/rodrigo/projetos/drastic-web-back/drastic/resultados" +  "/ones.tif"
+    Processing.runAlgorithm("gdal:rastercalculator", {'INPUT_A': stream, 'BAND_A': 1, 'INPUT_B': None, 'BAND_B': -1, 'INPUT_C': None, 'BAND_C': -1, 'INPUT_D': None, 'BAND_D': -1, 'INPUT_E': None, 'BAND_E': -1, 'INPUT_F': None, 'BAND_F': -1, 'FORMULA': "A>1",'NO_DATA': None, 'RTYPE': 5, 'EXTRA': '', 'OPTIONS': '', 'OUTPUT': stream_ones })
 
     # raster distance
     raster_distance = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/raster_distance.tif"
