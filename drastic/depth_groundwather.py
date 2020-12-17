@@ -451,6 +451,7 @@ def convert_mdt(input_mdt, max_depth, distance, min_size, ratings, output_path):
     """
 
 
+
 input_mdt = "/home/rodrigo/projetos/drastic-web-back/drastic/Dados/d.sdat"
 max_depth = 20
 distance = 200
@@ -458,3 +459,4 @@ min_size = 50
 ratings = [ [0, 1.5, 10], [1.5, 4.6, 9], [4.6, 9.1, 7], [9.1, 15.2, 5], [15.2, 22.9, 3], [22.9, 30.5, 2], [30.5, 200, 1]]
 output_path = "/home/rodrigo/projetos/drastic-web-back/drastic/Dados/dem_rodrigo.tif"
 convert_mdt(input_mdt, max_depth, distance, min_size, ratings, output_path)
+
