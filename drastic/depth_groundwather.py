@@ -333,8 +333,8 @@ def convert_mdt(input_mdt, max_depth, distance, min_size, ratings, output_path):
     QgsApplication.processingRegistry().addProvider(QgsNativeAlgorithms())
     gdal.AllRegister()
 
-    for alg in QgsApplication.processingRegistry().algorithms():
-        print(alg.id(), "->", alg.displayName())
+    #for alg in QgsApplication.processingRegistry().algorithms():
+    #    print(alg.id(), "->", alg.displayName())
 
     # read raster
     inputRaster = input_mdt
@@ -345,6 +345,7 @@ def convert_mdt(input_mdt, max_depth, distance, min_size, ratings, output_path):
     # minimum size
     size = min_size
     outPath2 = output_path 
+    process_path = "/home/rodrigo/data/d/process" 
 
     
 
@@ -358,7 +359,8 @@ def convert_mdt(input_mdt, max_depth, distance, min_size, ratings, output_path):
     extent_raster_str = str(xmin_raster) + "," + str(xmax_raster) + "," + str(ymin_raster) + "," + str(ymax_raster)     
     cellSize = layer_raster.rasterUnitsPerPixelX()
 
-    stream = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/stream.tif"
+    #stream = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/stream.tif"
+    stream = process_path + "/stream.tif"
     #QMessageBox.about(self, "teste", str(stream))
     Processing.runAlgorithm("grass7:r.watershed",{'elevation': inputRaster, 'depression': None,
                     'flow': None, 'disturbed_land': None, 'blocking': None, 'threshold': size,
@@ -378,31 +380,31 @@ def convert_mdt(input_mdt, max_depth, distance, min_size, ratings, output_path):
 
     
     # condition stream > 1 to have the lines with value 1
-    stream_ones = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/stream_ones.tif"
-
-    Processing.runAlgorithm("grass7:r.mapcalc.simple",
-                            {'a': str(stream),
-                                'b': None,
-                                'c': None, 'd': None, 'e': None, 'f': None,
-                                'expression': 'A>1',
-                                'output': stream_ones, 'GRASS_REGION_PARAMETER': None,
-                                'GRASS_REGION_CELLSIZE_PARAMETER': 0, 'GRASS_RASTER_FORMAT_OPT': '',
-                                'GRASS_RASTER_FORMAT_META': ''})
+    #stream_ones = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/stream_ones.tif"
+    stream_ones = process_path + "/stream_ones.tif"
+    Processing.runAlgorithm("grass7:r.mapcalc.simple",{'a': str(stream),'b': None,'c': None, 'd': None, 'e': None, 'f': None,'expression': 'A>1','output': stream_ones, 'GRASS_REGION_PARAMETER': None,'GRASS_REGION_CELLSIZE_PARAMETER': 0, 'GRASS_RASTER_FORMAT_OPT': '','GRASS_RASTER_FORMAT_META': ''})
 
 
 
     # raster distance
-    raster_distance = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/raster_distance.tif"
+    #raster_distance = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/raster_distance.tif"
+    raster_distance = process_path + "/raster_distance.tif"
     
     #Processing.runAlgorithm("saga:proximitygrid", None, str(stream_ones_str), 3, str(raster_distance), None, None)
 
-    Processing.runAlgorithm("saga:proximityraster", {
-        'FEATURES': str(stream_ones),
-        'DISTANCE': str(raster_distance), 'DIRECTION': 'TEMPORARY_OUTPUT', 'ALLOCATION': 'TEMPORARY_OUTPUT'})
-
+    #Processing.runAlgorithm("saga:proximityraster", {
+    #    'FEATURES': str(stream_ones),
+    #    'DISTANCE': str(raster_distance), 'DIRECTION': 'TEMPORARY_OUTPUT', 'ALLOCATION': 'TEMPORARY_OUTPUT'})
+    
+    Processing.runAlgorithm("grass7:r.grow.distance", {'input': str(stream_ones),
+                'metric': 0, '-m': False, '-': False, 'distance': str(raster_distance),
+                'value': 'TEMPORARY_OUTPUT', 'GRASS_REGION_PARAMETER': None,
+                'GRASS_REGION_CELLSIZE_PARAMETER': 0, 'GRASS_RASTER_FORMAT_OPT': '',
+                'GRASS_RASTER_FORMAT_META': ''})
 
     # condition distance >=  200, always maximum depth meters
-    dist_major_200 = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/dist_major_200.tif"
+    #dist_major_200 = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/dist_major_200.tif"
+    dist_major_200 = process_path + "/dist_major_200.tif"
 
     Processing.runAlgorithm("grass7:r.mapcalc.simple",
                             {'a': str(raster_distance),
@@ -413,7 +415,8 @@ def convert_mdt(input_mdt, max_depth, distance, min_size, ratings, output_path):
                                 'GRASS_REGION_CELLSIZE_PARAMETER': 0, 'GRASS_RASTER_FORMAT_OPT': '',
                                 'GRASS_RASTER_FORMAT_META': ''})
     
-    dist_multiplication = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/dist_multiplication.tif"
+    #dist_multiplication = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/dist_multiplication.tif"
+    dist_multiplication = process_path + "/dist_multiplication.tif"
 
     Processing.runAlgorithm("grass7:r.mapcalc.simple",
                             {'a': str(dist_major_200),
@@ -425,8 +428,8 @@ def convert_mdt(input_mdt, max_depth, distance, min_size, ratings, output_path):
                                 'GRASS_RASTER_FORMAT_META': ''})
     
     # condition distance < 200, inteprolation between 0 and maximum depth
-    dist_minor_200 = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/dist_minor_200.tif"
-
+    #dist_minor_200 = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/dist_minor_200.tif"
+    dist_minor_200 = process_path + "/dist_minor_200.tif"
     Processing.runAlgorithm("grass7:r.mapcalc.simple",
                             {'a': str(raster_distance),
                                 'b': None,
@@ -437,11 +440,11 @@ def convert_mdt(input_mdt, max_depth, distance, min_size, ratings, output_path):
                                 'GRASS_RASTER_FORMAT_META': ''})
     
     # multiplication by the raster distance
-    dist_multiplication_dist = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/dist_multiplication_dist.tif"
-
+    #dist_multiplication_dist = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/dist_multiplication_dist.tif"
+    dist_multiplication_dist = process_path + "/dist_multiplication_dist.tif"
     Processing.runAlgorithm("grass7:r.mapcalc.simple",
                             {'a': str(dist_minor_200),
-                                'b': None,
+                                'b': str(dist_major_200),
                                 'c': None, 'd': None, 'e': None, 'f': None,
                                 'expression': 'A*B',
                                 'output': dist_multiplication_dist, 'GRASS_REGION_PARAMETER': None,
@@ -449,8 +452,8 @@ def convert_mdt(input_mdt, max_depth, distance, min_size, ratings, output_path):
                                 'GRASS_RASTER_FORMAT_META': ''})
     
     # interpolation between 0 and distance
-    interpolation_dist = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/interpolation_dist.tif"
-
+    #interpolation_dist = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/interpolation_dist.tif"
+    interpolation_dist = process_path + "/interpolation_dist.tif"
     Processing.runAlgorithm("grass7:r.mapcalc.simple",
                             {'a': str(dist_multiplication_dist),
                                 'b': None,
@@ -461,11 +464,11 @@ def convert_mdt(input_mdt, max_depth, distance, min_size, ratings, output_path):
                                 'GRASS_RASTER_FORMAT_META': ''})
     
     # depth surface = sum of two conditions
-    depth_surface = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/depth_surface.tif"
-
+    #depth_surface = QFileInfo(QgsApplication.qgisUserDatabaseFilePath()).path() + "/depth_surface.tif"
+    depth_surface = process_path + "/depth_surface.tif"
     Processing.runAlgorithm("grass7:r.mapcalc.simple",
                             {'a': str(dist_multiplication),
-                                'b': None,
+                                'b': str(dist_multiplication_dist),
                                 'c': None, 'd': None, 'e': None, 'f': None,
                                 'expression': 'A+B',
                                 'output': depth_surface, 'GRASS_REGION_PARAMETER': None,
@@ -474,40 +477,33 @@ def convert_mdt(input_mdt, max_depth, distance, min_size, ratings, output_path):
 
     
     # indexes for topography
-    numberRows = int(self.tableWidget.rowCount())
-    numberColumns = int(self.tableWidget.columnCount())
-    classes = ''
-    lista = []
-    for i in range(0,numberRows):
-        for j in range(0,numberColumns):
-            self.line = self.tableWidget.item(i,j)
-            lista = lista + [self.line.text()]
+ 
+   
+    """rattings_lista = []
+    for linha in ratings:
+        for coluna in linha:
+            rattings_lista = rattings_lista + [str(coluna)]
             string = ","
-            intervalos = string.join(lista)
-    results = list(map(float, lista))
+            intervalos = string.join(rattings_lista)
+    results = list(map(float, rattings_lista))
+    print(results)"""
 
-    Processing.runAlgorithm("saga:reclassifyvalues",{'INPUT': depth_surface, 'METHOD':2, 'OLD':0, 'NEW':1, 'SOPERATOR':0, 'MIN':0, 'MAX':1,
-                                                        'RNEW':2, 'ROPERATOR':0, 'RETAB':results, 'TOPERATOR':0, 'NODATAOPT':True, 'NODATA':0,
-                                                        'OTHEROPT':True, 'OTHERS':0, 'RESULT':outPath2})
+    #Processing.runAlgorithm("saga:reclassifyvalues",{'INPUT': depth_surface, 'METHOD':2, 'OLD':0, 'NEW':1, 'SOPERATOR':0, 'MIN':0, 'MAX':1,
+    #                                                    'RNEW':2, 'ROPERATOR':0, 'RETAB':results, 'TOPERATOR':0, 'NODATAOPT':True, 'NODATA':0,
+    #                                                    'OTHEROPT':True, 'OTHERS':0, 'RESULT':outPath2})
 
-
-    # add result into canvas
-    file_info_norm = QFileInfo(str(outPath2))
-    #QMessageBox.about(self, "teste", str(file_info_norm))
-    rlayer_new_norm = QgsRasterLayer(outPath2, file_info_norm.fileName(), 'gdal')
-    #QMessageBox.about(self, "teste", str(rlayer_new_norm))
-    QgsProject.instance().addMapLayer(rlayer_new_norm)
-    self.iface.canvas.setExtent(rlayer_new_norm.extent())
-    # set the map canvas layer set
-    self.iface.canvas.setLayers([rlayer_new_norm])
+    Processing.runAlgorithm("native:reclassifybytable",
+               {'INPUT_RASTER': str(depth_surface),
+                'RASTER_BAND': 1, 'TABLE': ratings,
+                'NO_DATA': -9999, 'RANGE_BOUNDARIES': 0, 'NODATA_FOR_MISSING': False, 'DATA_TYPE': 5,
+                'OUTPUT': outPath2})
 
 
-
-input_mdt = "/home/rodrigo/data/d/d.sdat"
+input_mdt = "/home/rodrigo/data/d/input/d.sdat"
 max_depth = 20
 distance = 200
 min_size = 50
-ratings = [ [0, 1.5, 10], [1.5, 4.6, 9], [4.6, 9.1, 7], [9.1, 15.2, 5], [15.2, 22.9, 3], [22.9, 30.5, 2], [30.5, 200, 1]]
-output_path = "/home/rodrigo/data/d/dem_rodrigo.tif"
+ratings = [0.0, 1.5, 10.0,  1.5, 4.6, 9.0,  4.6, 9.1, 7.0,  9.1, 15.2, 5.0,  15.2, 22.9, 3.0,  22.9, 30.5, 2.0,  30.5, 200.0, 1.0]
+output_path = "/home/rodrigo/data/d/result/dem_rodrigo.tif"
 convert_mdt(input_mdt, max_depth, distance, min_size, ratings, output_path)
 
