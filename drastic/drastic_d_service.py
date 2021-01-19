@@ -1,6 +1,8 @@
 import os
+from depth_groundwather import DepthGroundWather
 from flask import Flask, flash, request, redirect, url_for, Response
 from werkzeug.utils import secure_filename
+
 
 UPLOAD_FOLDER = "/home/rodrigo/data/d"
 ALLOWED_EXTENSIONS = {'txt', 'prj', 'sdat', 'sgrd'}
@@ -31,11 +33,22 @@ def upload_file():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+            response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response
 
 @app.route('/drastic/d', methods=['GET', 'POST'])
 def calculate_d():
     if request.method == 'POST':
         data = request.data
-        print(data)
-    return Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+        input_mdt = "/home/rodrigo/data/d/input/d.sdat"
+        max_depth = 20
+        distance = 200
+        min_size = 50
+        ratings = [0.0, 1.5, 10.0,  1.5, 4.6, 9.0,  4.6, 9.1, 7.0,  9.1, 15.2, 5.0,  15.2, 22.9, 3.0,  22.9, 30.5, 2.0,  30.5, 200.0, 1.0]
+        output_path = "/home/rodrigo/data/d/result/d.tif"
+        depth = DepthGroundWather()
+        depth.convert_mdt(input_mdt, max_depth, distance, min_size, ratings, output_path)
+    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
