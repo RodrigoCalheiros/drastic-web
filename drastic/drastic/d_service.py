@@ -1,45 +1,44 @@
 import os
-from depth_groundwather import DepthGroundWather
+import settings
+
 from flask import Flask, flash, request, redirect, url_for, Response
-from werkzeug.utils import secure_filename
 
-
-UPLOAD_FOLDER = "/home/rodrigo/data/d"
-ALLOWED_EXTENSIONS = {'txt', 'prj', 'sdat', 'sgrd'}
+from depth_groundwather.depth_groundwather import DepthGroundWather
+from file.file import File
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['UPLOAD_FOLDER'] = settings.DRASTIC_DATA_FOLDER_D_INPUT
 
-@app.route('/drastic/mdt', methods = ['POST'])
-def upload_file_mdt():
-    return "depth"
-
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-@app.route('/drastic/d/mdt', methods=['GET', 'POST'])
+@app.route('/drastic/d/upload/mdt', methods=['POST'])
 def upload_file():
     if request.method == 'POST':
         # check if the post request has the file part
         if 'file' not in request.files:
-            return Response("{'msg': 'No file part'", status=403, mimetype='application/json')
-        file = request.files['file']
+            response = Response("{'msg': 'No file part'", status=403, mimetype='application/json')
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response
+        
+        request_file = request.files['file']
+
         # if user does not select file, browser also
         # submit an empty part without filename
-        if file.filename == '':
-            flash('No selected file')
-            return Response("{'msg': 'No selected file'", status=403, mimetype='application/json')
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        if request_file.filename == '':
+            flash('No selected file')      
+            response = Response("{'msg': 'No selected file'", status=403, mimetype='application/json')
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response
+        
+        file = File()
+        if request_file and file.allowed_file(request_file.filename, settings.ALLOWED_EXTENSIONS):
+            file.save(request_file, app.config['UPLOAD_FOLDER'])
             response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
             response.headers.add('Access-Control-Allow-Origin', '*')
             return response
 
-@app.route('/drastic/d', methods=['GET', 'POST'])
+@app.route('/drastic/d/calculate', methods=['POST'])
 def calculate_d():
     if request.method == 'POST':
+        print request.data
         data = request.data
         input_mdt = "/home/rodrigo/data/d/input/d.sdat"
         max_depth = 20
@@ -49,6 +48,7 @@ def calculate_d():
         output_path = "/home/rodrigo/data/d/result/d.tif"
         depth = DepthGroundWather()
         depth.convert_mdt(input_mdt, max_depth, distance, min_size, ratings, output_path)
+
     response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response

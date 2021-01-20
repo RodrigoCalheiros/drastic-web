@@ -1,2 +1,0 @@
-DRASTIC_DATA_FOLDER = "/home/rodrigo/drastis/"
-DRASTIC_DATA_FOLDER_D = DRASTIC_DATA_FOLDER + "d/"
