@@ -30,7 +30,7 @@ def upload_file():
         
         file = File()
         if request_file and file.allowed_file(request_file.filename, settings.ALLOWED_EXTENSIONS):
-            file.save(request_file, app.config['UPLOAD_FOLDER'])
+            file.save(request_file, settings.DRASTIC_DATA_FOLDER_D_INPUT)
             response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
             response.headers.add('Access-Control-Allow-Origin', '*')
             return response
@@ -40,15 +40,32 @@ def calculate_d():
     if request.method == 'POST':
         print request.data
         data = request.data
-        input_mdt = "/home/rodrigo/data/d/input/d.sdat"
+        input_mdt = settings.DRASTIC_DATA_FOLDER_D_INPUT
+        max_depth = data.maxDepth
+        distance = data.distance
+        min_size = data.minSize
+        ratings = settings.RATINGS
+        output_path = settings.DRASTIC_DATA_FOLDER_D_RESULT
+        depth = DepthGroundWather()
+        depth.convert_mdt(input_mdt, max_depth, distance, min_size, ratings, output_path)
+    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
+
+@app.route('/drastic/r/calculate', methods=['POST'])
+def calculate_r():
+    if request.method == 'POST':
+        print request.data
+        data = request.data
+        input_mdt = "/home/rodrigo/data/r/input/d.sdat"
         max_depth = 20
         distance = 200
         min_size = 50
         ratings = [0.0, 1.5, 10.0,  1.5, 4.6, 9.0,  4.6, 9.1, 7.0,  9.1, 15.2, 5.0,  15.2, 22.9, 3.0,  22.9, 30.5, 2.0,  30.5, 200.0, 1.0]
-        output_path = "/home/rodrigo/data/d/result/d.tif"
-        depth = DepthGroundWather()
-        depth.convert_mdt(input_mdt, max_depth, distance, min_size, ratings, output_path)
-
+        output_path = "/home/rodrigo/data/r/result/d.tif"
+        recharge = Recharge()
+        recharge.convert_mdt(input_mdt, ratings, output_path)
     response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
