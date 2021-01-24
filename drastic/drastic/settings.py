@@ -1,4 +1,4 @@
-ALLOWED_EXTENSIONS = {'txt', 'prj', 'sdat', 'sgrd'}
+ALLOWED_EXTENSIONS = {'txt', 'prj', 'sdat', 'sgrd', 'rar'}
 
 RATINGS = [0.0, 1.5, 10.0,  1.5, 4.6, 9.0,  4.6, 9.1, 7.0,  9.1, 15.2, 5.0,  15.2, 22.9, 3.0,  22.9, 30.5, 2.0,  30.5, 200.0, 1.0]
 

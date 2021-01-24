@@ -14,7 +14,7 @@ from pprint import pprint
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = settings.DRASTIC_DATA_FOLDER_D_INPUT
 
-@app.route('/drastic/d/upload/mdt', methods=['POST'])
+@app.route('/drastic/upload', methods=['POST'])
 def upload_file():
     if request.method == 'POST':
         # check if the post request has the file part
@@ -42,18 +42,14 @@ def upload_file():
 
 @app.route('/drastic/d/calculate', methods=['POST'])
 def calculate_d():
-    pprint(request)
-    pprint(vars(request))
-    print(request.data)
     if request.method == 'POST':
-        print(request.json)
-        data =  request.form["data"]
+        data =  json.loads(request.form["data"])
         input_file = settings.DRASTIC_DATA_FOLDER_D_INPUT + "d.sdat"
         process_path = settings.DRASTIC_DATA_FOLDER_D_PROCESS
         output_file = settings.DRASTIC_DATA_FOLDER_D_RESULT + "d.tif"
-        max_depth = data.maxDepth
-        distance = data.distance
-        min_size = data.minSize
+        max_depth = data["maxDepth"]
+        distance = data["distance"]
+        min_size = data["minSize"]
         rattings = settings.RATINGS
         depth = DepthGroundWather(input_file, output_file, max_depth, distance, min_size, rattings)
         depth.convert_mdt(process_path)
@@ -71,6 +67,23 @@ def calculate_r():
         rattings = settings.RATINGS
         recharge = Recharge(input_file, output_file, rattings)
         recharge.convert_mdt(process_path)
+    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
+@app.route('/drastic/a/calculate', methods=['POST'])
+def calculate_a():
+    if request.method == 'POST':
+        data =  json.loads(request.form["data"])
+        input_file = settings.DRASTIC_DATA_FOLDER_D_INPUT + "d.sdat"
+        process_path = settings.DRASTIC_DATA_FOLDER_D_PROCESS
+        output_file = settings.DRASTIC_DATA_FOLDER_D_RESULT + "d.tif"
+        max_depth = data["maxDepth"]
+        distance = data["distance"]
+        min_size = data["minSize"]
+        rattings = settings.RATINGS
+        depth = DepthGroundWather(input_file, output_file, max_depth, distance, min_size, rattings)
+        depth.convert_mdt(process_path)
     response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
