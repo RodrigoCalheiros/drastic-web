@@ -33,12 +33,17 @@ def upload_file():
             response.headers.add('Access-Control-Allow-Origin', '*')
             return response
         
-        file = File()
-        if request_file and file.allowed_file(request_file.filename, settings.ALLOWED_EXTENSIONS):
-            file.save(request_file, settings.DRASTIC_DATA_FOLDER_D_INPUT)
-            response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
-            response.headers.add('Access-Control-Allow-Origin', '*')
-            return response
+        file = File(request_file)
+        file.unzip(settings.DRASTIC_DATA_FOLDER_D_INPUT)
+        response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response
+
+        #if request_file and file.allowed_file(settings.ALLOWED_EXTENSIONS):
+        #    file.save(settings.DRASTIC_DATA_FOLDER_D_INPUT, "d")
+        #    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+        #    response.headers.add('Access-Control-Allow-Origin', '*')
+        #    return response
 
 @app.route('/drastic/d/calculate', methods=['POST'])
 def calculate_d():
