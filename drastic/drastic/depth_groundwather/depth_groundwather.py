@@ -8,23 +8,23 @@ QgsApplication.setPrefixPath('/usr', True)
 
 sys.path.append('/usr/share/qgis/python/plugins/')
 from processing.core.Processing import Processing
-qgs = QgsApplication([], False)
-qgs.initQgis()
-Processing.initialize()
-      
-QgsApplication.processingRegistry().addProvider(QgsNativeAlgorithms())
 
 class DepthGroundWather:
 
-    def __init__(self, input_mdt, max_depth, distance, size, ratings, output_file):
-        self.input_mdt = input_mdt
+    def __init__(self, input_file, output_file, max_depth, distance, size, rattings):
+        self.input_mdt = input_file
         self.max_depth = max_depth
         self.size = size
         self.distance = distance
-        self.ratings = ratings
+        self.rattings = rattings
         self.output_file = output_file
 
     def convert_mdt(self, process_path):
+        qgs = QgsApplication([], False)
+        qgs.initQgis()
+        Processing.initialize()
+            
+        QgsApplication.processingRegistry().addProvider(QgsNativeAlgorithms())
         gdal.AllRegister()
 
         #for alg in QgsApplication.processingRegistry().algorithms():
@@ -260,7 +260,7 @@ class DepthGroundWather:
         Processing.runAlgorithm("native:reclassifybytable", {
             'INPUT_RASTER': str(depth_surface),
             'RASTER_BAND': 1,
-            'TABLE': self.ratings,
+            'TABLE': self.rattings,
             'NO_DATA': -9999,
             'RANGE_BOUNDARIES': 0,
             'NODATA_FOR_MISSING': False,
