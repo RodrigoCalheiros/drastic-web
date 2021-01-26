@@ -6,6 +6,7 @@ from flask import Flask, flash, request, redirect, url_for, Response
 from file.file import File
 from depth_groundwather.depth_groundwather import DepthGroundWather
 from recharge.recharge import Recharge
+from shp.shp import Shp
 from pprint import pprint
 
 
@@ -34,16 +35,16 @@ def upload_file():
             return response
         
         file = File(request_file)
-        file.unzip(settings.DRASTIC_DATA_FOLDER_D_INPUT)
-        response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        return response
+        #file.unzip(settings.DRASTIC_DATA_FOLDER_D_INPUT)
+        #response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+        #response.headers.add('Access-Control-Allow-Origin', '*')
+        #return response
 
-        #if request_file and file.allowed_file(settings.ALLOWED_EXTENSIONS):
-        #    file.save(settings.DRASTIC_DATA_FOLDER_D_INPUT, "d")
-        #    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
-        #    response.headers.add('Access-Control-Allow-Origin', '*')
-        #    return response
+        if request_file and file.allowed_file(settings.ALLOWED_EXTENSIONS):
+            file.save(settings.DRASTIC_DATA_FOLDER_D_INPUT, "d")
+            response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response
 
 @app.route('/drastic/d/calculate', methods=['POST'])
 def calculate_d():
@@ -55,7 +56,7 @@ def calculate_d():
         max_depth = data["maxDepth"]
         distance = data["distance"]
         min_size = data["minSize"]
-        rattings = settings.RATINGS
+        rattings = settings.D_RATINGS
         depth = DepthGroundWather(input_file, output_file, max_depth, distance, min_size, rattings)
         depth.convert_mdt(process_path)
     response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
@@ -69,7 +70,7 @@ def calculate_r():
         input_file = settings.DRASTIC_DATA_FOLDER_R_INPUT + "r.sdat"
         process_path = settings.DRASTIC_DATA_FOLDER_R_PROCESS
         output_file = settings.DRASTIC_DATA_FOLDER_R_RESULT + "r.tif"
-        rattings = settings.RATINGS
+        rattings = settings.R_RATINGS
         recharge = Recharge(input_file, output_file, rattings)
         recharge.convert_mdt(process_path)
     response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
@@ -86,9 +87,37 @@ def calculate_a():
         max_depth = data["maxDepth"]
         distance = data["distance"]
         min_size = data["minSize"]
-        rattings = settings.RATINGS
+        rattings = settings.A_RATINGS
         depth = DepthGroundWather(input_file, output_file, max_depth, distance, min_size, rattings)
         depth.convert_mdt(process_path)
     response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
+@app.route('/drastic/shp/header', methods=['GET'])
+def get_shp_header():
+    if request.method == 'GET':
+        variable = request.args.get("variable")
+        print(variable)
+        input_file = settings.DRASTIC_DATA_FOLDER_A_INPUT + "a.shp"
+        shp = Shp(input_file)
+        header = shp.get_header()
+        print(header)
+    response = Response("{'msg': 'Sucess', 'data': '{}'}".format(header), status=200, mimetype='application/json')
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
+@app.route('/drastic/shp/value', methods=['GET'])
+def get_shp_value():
+    if request.method == 'GET':
+        variable = request.args.get("variable")
+        field = request.args.get("field")
+        print(variable)
+        print(field)
+        input_file = settings.DRASTIC_DATA_FOLDER_A_INPUT + "a.shp"
+        shp = Shp(input_file)
+        header = shp.get_value(field)
+        print(header)
+    response = Response("{'msg': 'Sucess', 'data': '{}'}".format(header), status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response

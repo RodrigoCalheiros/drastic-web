@@ -95,7 +95,7 @@ class Recharge:
             'd': None,
             'e': None,
             'f': None,
-            'expression': "(A*0.99+542.22)*0.15",
+            'expression': "((A*0.99)+542.22)*0.15",
             'output': recharge_without_rec,
             'GRASS_REGION_PARAMETER': None,
             'GRASS_REGION_CELLSIZE_PARAMETER': 0,
@@ -110,7 +110,7 @@ class Recharge:
         #outData2 = None
         
         recharge_without_rec_file = gdal.Open(recharge_without_rec)
-        recharge_without_rec_rep = process_path + "recharge_without_rec"
+        recharge_without_rec_rep = process_path + "recharge_without_rec_rep"
         gdal.Warp(recharge_without_rec_rep, recharge_without_rec_file, dstSRS="EPSG:3763")
 
         #Processing.runAlgorithm("gdal:assignprojection",
