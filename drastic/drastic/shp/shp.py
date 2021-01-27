@@ -1,5 +1,5 @@
 import sys, os
-from . import GdalTools_utils
+from osgeo import gdal, ogr
 from qgis.core import *
 
 class Shp:
@@ -7,8 +7,10 @@ class Shp:
         self.filename = filename
 
     def get_header(self):
-        (fields, names) = GdalTools_utils.getVectorFields(self.filename)
-        return (fields, names)
+        layer = QgsVectorLayer(self.filename, self.filename , "ogr")
+        fields = layer.fields()
+        field_names = [field.name() for field in fields]
+        return (field_names)
 
     def get_values(self, field):
         values = []
@@ -22,4 +24,24 @@ class Shp:
             attributes = features.attributes()
             values.append(attributes[index])
         return values
+
+    def getVectorFields(self, vectorFile):
+        hds = ogr.Open(vectorFile)
+        if hds == None:
+            print ("erro")
+
+        fields = []
+        names = []
+
+        layer = hds.GetLayer(0)
+        defn = layer.GetLayerDefn()
+
+        for i in range(defn.GetFieldCount()):
+            fieldDefn = defn.GetFieldDefn(i)
+            fieldType = fieldDefn.GetType()
+            if fieldType == 0 or fieldType == 2:
+                fields.append(fieldDefn)
+                names.append(fieldDefn.GetName())
+
+        return (fields, names)
     
