@@ -1,0 +1,233 @@
+MAP
+    CONFIG "MS_ERRORFILE" "/var/www/mapserv/log.txt"
+    DEBUG 5
+    NAME "MAPSERVER_DRASTIC"
+    STATUS ON
+    SIZE 800 600
+    EXTENT -180 -90 180 90
+    UNITS METERS
+    SHAPEPATH "/home/rodrigo/data"
+    IMAGECOLOR 155 155 155
+
+    WEB
+        METADATA
+            "wms_title"             "MapServer Drastic"
+            "wms_onlineresource"    "http://http://localhost/cgi-bin/mapserv?map=/var/www/mapserv/drastic.map"
+            "wms_enable_request"    "*"
+            "wms_srs"               "EPSG:3857"
+        END
+    END
+
+    PROJECTION
+        "init=epsg:3857"
+    END
+
+    LAYER
+        NAME "d"
+        DATA "d/result/d.tif"
+        TYPE RASTER
+        STATUS ON
+        CLASSITEM "[pixel]"
+        CLASS
+            EXPRESSION ([pixel] >= 0 AND [pixel] < 1)
+            STYLE
+                COLOR 255 0 0
+            END
+        END
+        CLASS
+            EXPRESSION ([pixel] >= 1 AND [pixel] < 2)
+            STYLE
+                COLOR 0 255 0
+            END
+        END
+        CLASS
+            EXPRESSION ([pixel] >= 2)
+            STYLE
+                COLOR 0 0 255
+            END
+        END
+    END
+
+    LAYER
+        NAME "r"
+        DATA "r/result/r.tif"
+        TYPE RASTER
+        STATUS ON
+        CLASSITEM "[pixel]"
+        CLASS
+            EXPRESSION ([pixel] >= 0 AND [pixel] < 1)
+            STYLE
+                COLOR 255 0 0
+            END
+        END
+        CLASS
+            EXPRESSION ([pixel] >= 1 AND [pixel] < 2)
+            STYLE
+                COLOR 0 255 0
+            END
+        END
+        CLASS
+            EXPRESSION ([pixel] >= 2)
+            STYLE
+                COLOR 0 0 255
+            END
+        END
+    END
+
+    LAYER
+        NAME "a"
+        DATA "a/result/a.tif"
+        TYPE RASTER
+        STATUS ON
+        CLASSITEM "[pixel]"
+        CLASS
+            EXPRESSION ([pixel] >= 0 AND [pixel] < 1)
+            STYLE
+                COLOR 255 0 0
+            END
+        END
+        CLASS
+            EXPRESSION ([pixel] >= 1 AND [pixel] < 2)
+            STYLE
+                COLOR 0 255 0
+            END
+        END
+        CLASS
+            EXPRESSION ([pixel] >= 2)
+            STYLE
+                COLOR 0 0 255
+            END
+        END
+    END
+
+    LAYER
+        NAME "s"
+        DATA "s/result/s.tif"
+        TYPE RASTER
+        STATUS ON
+        CLASSITEM "[pixel]"
+        CLASS
+            EXPRESSION ([pixel] >= 0 AND [pixel] < 1)
+            STYLE
+                COLOR 255 0 0
+            END
+        END
+        CLASS
+            EXPRESSION ([pixel] >= 1 AND [pixel] < 2)
+            STYLE
+                COLOR 0 255 0
+            END
+        END
+        CLASS
+            EXPRESSION ([pixel] >= 2)
+            STYLE
+                COLOR 0 0 255
+            END
+        END
+    END
+
+    LAYER
+        NAME "t"
+        DATA "t/result/t.tif"
+        TYPE RASTER
+        STATUS ON
+        CLASSITEM "[pixel]"
+        CLASS
+            EXPRESSION ([pixel] >= 0 AND [pixel] < 1)
+            STYLE
+                COLOR 255 0 0
+            END
+        END
+        CLASS
+            EXPRESSION ([pixel] >= 1 AND [pixel] < 2)
+            STYLE
+                COLOR 0 255 0
+            END
+        END
+        CLASS
+            EXPRESSION ([pixel] >= 2)
+            STYLE
+                COLOR 0 0 255
+            END
+        END
+    END
+
+    LAYER
+        NAME "i"
+        DATA "i/result/i.tif"
+        TYPE RASTER
+        STATUS ON
+        CLASSITEM "[pixel]"
+        CLASS
+            EXPRESSION ([pixel] >= 0 AND [pixel] < 1)
+            STYLE
+                COLOR 255 0 0
+            END
+        END
+        CLASS
+            EXPRESSION ([pixel] >= 1 AND [pixel] < 2)
+            STYLE
+                COLOR 0 255 0
+            END
+        END
+        CLASS
+            EXPRESSION ([pixel] >= 2)
+            STYLE
+                COLOR 0 0 255
+            END
+        END
+    END
+
+    LAYER
+        NAME "c"
+        DATA "c/result/c.tif"
+        TYPE RASTER
+        STATUS ON
+        CLASSITEM "[pixel]"
+        CLASS
+            EXPRESSION ([pixel] >= 0 AND [pixel] < 1)
+            STYLE
+                COLOR 255 0 0
+            END
+        END
+        CLASS
+            EXPRESSION ([pixel] >= 1 AND [pixel] < 2)
+            STYLE
+                COLOR 0 255 0
+            END
+        END
+        CLASS
+            EXPRESSION ([pixel] >= 2)
+            STYLE
+                COLOR 0 0 255
+            END
+        END
+    END
+    
+    LAYER
+        NAME "drastic"
+        DATA "drastic.tif"
+        TYPE RASTER
+        STATUS ON
+        CLASSITEM "[pixel]"
+        CLASS
+            EXPRESSION ([pixel] >= 0 AND [pixel] < 1)
+            STYLE
+                COLOR 255 0 0
+            END
+        END
+        CLASS
+            EXPRESSION ([pixel] >= 1 AND [pixel] < 2)
+            STYLE
+                COLOR 0 255 0
+            END
+        END
+        CLASS
+            EXPRESSION ([pixel] >= 2)
+            STYLE
+                COLOR 0 0 255
+            END
+        END
+    END
+
+END
