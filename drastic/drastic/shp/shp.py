@@ -18,11 +18,13 @@ class Shp:
         fields = layer.fields()
         index = -1
         for i in range(0,len(fields)):
+            print (fields[i].name())
             if fields[i].name()==str(field):
                 index = i
         for features in layer.getFeatures():
             attributes = features.attributes()
-            values.append(attributes[index])
+            if not attributes[index] in values:
+                values.append(attributes[index])
         return values
 
     def getVectorFields(self, vectorFile):

@@ -107,17 +107,14 @@ def get_shp_header(variable):
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
-@app.route('/drastic/shp/value', methods=['GET'])
-def get_shp_value():
+@app.route('/drastic/shp/value/<variable>', methods=['GET'])
+def get_shp_value(variable):
     if request.method == 'GET':
-        variable = request.args.get("variable")
         field = request.args.get("field")
-        print(variable)
-        print(field)
-        input_file = settings.DRASTIC_DATA_FOLDER_A_INPUT + "a.shp"
+        input_file = settings.DRASTIC_DATA_FOLDER_A_INPUT + "COS.shp"
         shp = Shp(input_file)
-        header = shp.get_values(field)
-        print(header)
-    response = Response("{'msg': 'Sucess', 'data': '{}'}".format(header), status=200, mimetype='application/json')
+        values = shp.get_values(field)
+    dataresponse =  {"msg": "Sucess", "data": values }
+    response = Response(json.dumps(dataresponse), status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
