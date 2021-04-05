@@ -66,7 +66,8 @@ class Aquifer:
                
         # list of description on tool table
         #lista_table = lista
-        lista_table = ["1, 3", "2, 5", "3, 8", "5, 10"]
+        #lista_table = ["1, 3", "2, 5", "3, 8", "5, 10"]
+        lista_table = self.rattings
         
         field_names = [field.name() for field in fields]
         n = len(field_names)
@@ -133,9 +134,3 @@ class Aquifer:
                                                      'GRASS_RASTER_FORMAT_OPT': '', 'GRASS_RASTER_FORMAT_META': '',
                                                      'GRASS_SNAP_TOLERANCE_PARAMETER': -1,
                                                      'GRASS_MIN_AREA_PARAMETER': 0.0001})
-
-input_file = settings.DRASTIC_DATA_FOLDER_A_INPUT + "COS.shp"
-process_path = settings.DRASTIC_DATA_FOLDER_A_PROCESS
-output_file = settings.DRASTIC_DATA_FOLDER_A_RESULT + "a.tif"
-aquifer = Aquifer(input_file, output_file, 27, "classe", None)
-aquifer.convert_mdt(process_path)
