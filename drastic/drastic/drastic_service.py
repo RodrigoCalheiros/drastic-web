@@ -5,7 +5,7 @@ import json
 from flask import Flask, flash, request, redirect, url_for, Response
 from file.file import File
 from depth_groundwather.depth_groundwather import DepthGroundWather
-from aquifer import Aquifer
+from aquifer.aquifer import Aquifer
 from recharge.recharge import Recharge
 from shp.shp import Shp
 from pprint import pprint
@@ -19,6 +19,7 @@ app.config['UPLOAD_FOLDER'] = settings.DRASTIC_DATA_FOLDER_D_INPUT
 @app.route('/drastic/upload/<variable>', methods=['POST'])
 def upload_file(variable):
     if request.method == 'POST':
+        print(request.files)
         # check if the post request has the file part
         if 'file' not in request.files:
             response = Response("{'msg': 'No file part'", status=403, mimetype='application/json')
@@ -96,7 +97,7 @@ def calculate_a():
     if request.method == 'POST':
         data =  json.loads(request.form["data"])
         print(data)
-        input_file = settings.DRASTIC_DATA_FOLDER_A_INPUT + "COS.shp"
+        input_file = settings.DRASTIC_DATA_FOLDER_A_INPUT + "a.shp"
         process_path = settings.DRASTIC_DATA_FOLDER_A_PROCESS
         output_file = settings.DRASTIC_DATA_FOLDER_A_RESULT + "a.tif"
         rattings = settings.A_RATINGS
@@ -111,7 +112,7 @@ def get_shp_header(variable):
     header = []
     if request.method == 'GET':
         print(variable)
-        input_file = settings.DRASTIC_DATA_FOLDER_A_INPUT + "COS.shp"
+        input_file = settings.DRASTIC_DATA_FOLDER_A_INPUT + "a.shp"
         shp = Shp(input_file)
         header = shp.get_header()
     dataresponse =  {"msg": "Sucess", "data": header }
@@ -123,7 +124,7 @@ def get_shp_header(variable):
 def get_shp_value(variable):
     if request.method == 'GET':
         field = request.args.get("field")
-        input_file = settings.DRASTIC_DATA_FOLDER_A_INPUT + "COS.shp"
+        input_file = settings.DRASTIC_DATA_FOLDER_A_INPUT + "a.shp"
         shp = Shp(input_file)
         values = shp.get_values(field)
     dataresponse =  {"msg": "Sucess", "data": values }

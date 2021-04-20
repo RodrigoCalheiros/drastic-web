@@ -1,4 +1,4 @@
-ALLOWED_EXTENSIONS = {'txt', 'prj', 'sdat', 'sgrd', 'rar'}
+ALLOWED_EXTENSIONS = {'txt', 'prj', 'sdat', 'sgrd', 'rar', 'cpg', 'dbf', 'qpj', 'shp', 'shx'}
 
 
 DRASTIC_DATA_FOLDER = "/home/rodrigo/data/"

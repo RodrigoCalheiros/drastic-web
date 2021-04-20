@@ -14,7 +14,7 @@ class File:
     def save(self, folder, name):
         filename = secure_filename(self.file.filename)
         print (filename)
-        return self.file.save(os.path.join(folder, name))
+        return self.file.save(os.path.join(folder, name + "." + self.file.filename.rsplit('.', 1)[1].lower()))
     
     def unzip(self, folder_output):
         print (self.file)
