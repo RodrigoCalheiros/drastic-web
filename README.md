@@ -16,4 +16,5 @@ sudo apt install qgis
 
 ## Run Project
 export FLASK_APP=drastic_service.py 
+
 flask run
