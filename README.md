@@ -1,4 +1,3 @@
-"# drastic-web-back" 
 ## Install Dependences
 sudo apt install python3-pip
 
