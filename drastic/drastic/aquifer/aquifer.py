@@ -1,5 +1,7 @@
 import sys, os
 import settings
+import glob
+from shutil import copyfile
 from osgeo import gdal
 from PyQt5.QtCore import *
 from qgis.core import QgsProcessingRegistry
@@ -13,7 +15,7 @@ from processing.core.Processing import Processing
 class Aquifer:
 
     def __init__(self, input_file, output_file, cellSize, elevation, rattings):
-        self.input_mdt = input_file
+        self.input_file = input_file
         self.output_file = output_file
         self.cellSize = int(cellSize)
         self.elevation = elevation
@@ -29,13 +31,18 @@ class Aquifer:
 
         gdal.AllRegister()
 
-        inputLayer = self.input_mdt
+        inputLayer = self.input_file
         process_path = process_path
         outPath = self.output_file
         cellSize = self.cellSize
-        #select field
         Elevation = self.elevation
-        
+        lista_table = self.rattings
+
+        for file in glob.glob(os.path.dirname(inputLayer) + "/a.*"):
+            copyfile(file, process_path + os.path.basename(file))
+    
+        inputLayer = process_path + os.path.basename(inputLayer)
+
         layer = QgsVectorLayer(inputLayer, inputLayer , "ogr")
         vectorlayer_vector =  layer.dataProvider()
         # extent
@@ -66,10 +73,11 @@ class Aquifer:
                
         # list of description on tool table
         #lista_table = lista
-        lista_table = ["1, 3", "2, 5", "3, 8", "5, 10"]
+        #lista_table = ["1, 3", "2, 5", "3, 8", "5, 10"]
         #lista_table = self.rattings
         
         field_names = [field.name() for field in fields]
+        print(field_names)
         n = len(field_names)
         lista_attrib = []
         for i in range(0,n):

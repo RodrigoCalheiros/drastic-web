@@ -64,14 +64,14 @@ def upload_file(variable):
 @app.route('/drastic/d/calculate', methods=['POST'])
 def calculate_d():
     if request.method == 'POST':
-        data =  json.loads(request.form["data"])
         input_file = settings.DRASTIC_DATA_FOLDER_D_INPUT + "d.sdat"
         process_path = settings.DRASTIC_DATA_FOLDER_D_PROCESS
         output_file = settings.DRASTIC_DATA_FOLDER_D_RESULT + "d.tif"
+        data =  json.loads(request.form["data"])
         max_depth = data["maxDepth"]
         distance = data["distance"]
         min_size = data["minSize"]
-        rattings = settings.D_RATINGS
+        rattings = data["ratings"]
         depth = DepthGroundWather(input_file, output_file, max_depth, distance, min_size, rattings)
         depth.convert_mdt(process_path)
     response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
@@ -85,7 +85,8 @@ def calculate_r():
         input_file = settings.DRASTIC_DATA_FOLDER_R_INPUT + "r.sdat"
         process_path = settings.DRASTIC_DATA_FOLDER_R_PROCESS
         output_file = settings.DRASTIC_DATA_FOLDER_R_RESULT + "r.tif"
-        rattings = settings.R_RATINGS
+        data =  json.loads(request.form["data"])
+        rattings = data["ratings"]
         recharge = Recharge(input_file, output_file, rattings)
         recharge.convert_mdt(process_path)
     response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
@@ -95,12 +96,11 @@ def calculate_r():
 @app.route('/drastic/a/calculate', methods=['POST'])
 def calculate_a():
     if request.method == 'POST':
-        data =  json.loads(request.form["data"])
-        print(data)
         input_file = settings.DRASTIC_DATA_FOLDER_A_INPUT + "a.shp"
         process_path = settings.DRASTIC_DATA_FOLDER_A_PROCESS
         output_file = settings.DRASTIC_DATA_FOLDER_A_RESULT + "a.tif"
-        rattings = settings.A_RATINGS
+        data =  json.loads(request.form["data"])
+        rattings = data["ratings"]
         aquifer = Aquifer(input_file, output_file, 30, "dd", rattings)
         aquifer.convert_mdt(process_path)
     response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
