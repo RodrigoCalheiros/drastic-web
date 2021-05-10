@@ -4,14 +4,15 @@ import json
 
 from flask import Flask, flash, request, redirect, url_for, Response
 from file.file import File
+
 from depth_groundwather.depth_groundwather import DepthGroundWather
-from aquifer.aquifer import Aquifer
 from recharge.recharge import Recharge
+from aquifer.aquifer import Aquifer
+from soil_media.soil_media import SoilMedia
+from impact_zone.impact_zone import ImpactZone
+
 from shp.shp import Shp
 from pprint import pprint
-
-
-
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = settings.DRASTIC_DATA_FOLDER_D_INPUT
@@ -61,6 +62,41 @@ def upload_file(variable):
             response.headers.add('Access-Control-Allow-Origin', '*')
             return response
 
+@app.route('/drastic/shp/header/<variable>', methods=['GET'])
+def get_shp_header(variable):
+    header = []
+    if request.method == 'GET':
+
+        if variable == 'a':
+            input_file = settings.DRASTIC_DATA_FOLDER_A_INPUT + "a.shp"
+        elif variable == 's':
+            input_file = settings.DRASTIC_DATA_FOLDER_S_INPUT + "s.shp"
+
+        shp = Shp(input_file)
+        header = shp.get_header()
+
+    dataresponse =  {"msg": "Sucess", "data": header }
+    response = Response(json.dumps(dataresponse), status=200, mimetype='application/json')
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
+@app.route('/drastic/shp/value/<variable>', methods=['GET'])
+def get_shp_value(variable):
+    if request.method == 'GET':
+
+        if variable == 'a':
+            input_file = settings.DRASTIC_DATA_FOLDER_A_INPUT + "a.shp"
+        elif variable == 's':
+            input_file = settings.DRASTIC_DATA_FOLDER_S_INPUT + "s.shp"
+
+        field = request.args.get("field")
+        shp = Shp(input_file)
+        values = shp.get_values(field)
+    dataresponse =  {"msg": "Sucess", "data": values }
+    response = Response(json.dumps(dataresponse), status=200, mimetype='application/json')
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
 @app.route('/drastic/d/calculate', methods=['POST'])
 def calculate_d():
     if request.method == 'POST':
@@ -71,8 +107,8 @@ def calculate_d():
         max_depth = data["maxDepth"]
         distance = data["distance"]
         min_size = data["minSize"]
-        rattings = data["ratings"]
-        depth = DepthGroundWather(input_file, output_file, max_depth, distance, min_size, rattings)
+        ratings = data["ratings"]
+        depth = DepthGroundWather(input_file, output_file, max_depth, distance, min_size, ratings)
         depth.convert_mdt(process_path)
     response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
@@ -86,8 +122,8 @@ def calculate_r():
         process_path = settings.DRASTIC_DATA_FOLDER_R_PROCESS
         output_file = settings.DRASTIC_DATA_FOLDER_R_RESULT + "r.tif"
         data =  json.loads(request.form["data"])
-        rattings = data["ratings"]
-        recharge = Recharge(input_file, output_file, rattings)
+        ratings = data["ratings"]
+        recharge = Recharge(input_file, output_file, ratings)
         recharge.convert_mdt(process_path)
     response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
@@ -100,34 +136,40 @@ def calculate_a():
         process_path = settings.DRASTIC_DATA_FOLDER_A_PROCESS
         output_file = settings.DRASTIC_DATA_FOLDER_A_RESULT + "a.tif"
         data =  json.loads(request.form["data"])
-        rattings = data["ratings"]
-        aquifer = Aquifer(input_file, output_file, 30, "dd", rattings)
+        ratings = data["ratings"]
+        field = data["field"]
+        aquifer = Aquifer(input_file, output_file, 30, field, ratings)
         aquifer.convert_mdt(process_path)
     response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
-@app.route('/drastic/shp/header/<variable>', methods=['GET'])
-def get_shp_header(variable):
-    header = []
-    if request.method == 'GET':
-        print(variable)
-        input_file = settings.DRASTIC_DATA_FOLDER_A_INPUT + "a.shp"
-        shp = Shp(input_file)
-        header = shp.get_header()
-    dataresponse =  {"msg": "Sucess", "data": header }
-    response = Response(json.dumps(dataresponse), status=200, mimetype='application/json')
+@app.route('/drastic/s/calculate', methods=['POST'])
+def calculate_s():
+    if request.method == 'POST':
+        input_file = settings.DRASTIC_DATA_FOLDER_S_INPUT + "s.shp"
+        process_path = settings.DRASTIC_DATA_FOLDER_S_PROCESS
+        output_file = settings.DRASTIC_DATA_FOLDER_S_RESULT + "s.tif"
+        data =  json.loads(request.form["data"])
+        ratings = data["ratings"]
+        field = data["field"]
+        soil_media = SoilMedia(input_file, output_file, 30, field, ratings)
+        soil_media.calculate(process_path)
+    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
-@app.route('/drastic/shp/value/<variable>', methods=['GET'])
-def get_shp_value(variable):
-    if request.method == 'GET':
-        field = request.args.get("field")
-        input_file = settings.DRASTIC_DATA_FOLDER_A_INPUT + "a.shp"
-        shp = Shp(input_file)
-        values = shp.get_values(field)
-    dataresponse =  {"msg": "Sucess", "data": values }
-    response = Response(json.dumps(dataresponse), status=200, mimetype='application/json')
+@app.route('/drastic/i/calculate', methods=['POST'])
+def calculate_i():
+    if request.method == 'POST':
+        input_file = settings.DRASTIC_DATA_FOLDER_I_INPUT + "i.shp"
+        process_path = settings.DRASTIC_DATA_FOLDER_I_PROCESS
+        output_file = settings.DRASTIC_DATA_FOLDER_I_RESULT + "i.tif"
+        data =  json.loads(request.form["data"])
+        ratings = data["ratings"]
+        field = data["field"]
+        impact_zone = ImpactZone(input_file, output_file, 30, field, ratings)
+        impact_zone.calculate(process_path)
+    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response

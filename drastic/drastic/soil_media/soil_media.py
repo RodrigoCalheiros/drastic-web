@@ -12,7 +12,7 @@ QgsApplication.setPrefixPath('/usr', True)
 sys.path.append('/usr/share/qgis/python/plugins/')
 from processing.core.Processing import Processing
 
-class Aquifer:
+class SoilMedia:
 
     def __init__(self, input_file, output_file, cellSize, elevation, rattings):
         self.input_file = input_file
@@ -22,11 +22,11 @@ class Aquifer:
         self.rattings = rattings
         
 
-    def convert_mdt(self, process_path):
+    def calculate(self, process_path):
         qgs = QgsApplication([], False)
+        
         qgs.initQgis()
         Processing.initialize()
-            
         QgsApplication.processingRegistry().addProvider(QgsNativeAlgorithms())
 
         gdal.AllRegister()
@@ -38,7 +38,7 @@ class Aquifer:
         Elevation = self.elevation
         lista_table = self.rattings
 
-        for file in glob.glob(os.path.dirname(inputLayer) + "/a.*"):
+        for file in glob.glob(os.path.dirname(inputLayer) + "/s.*"):
             copyfile(file, process_path + os.path.basename(file))
     
         inputLayer = process_path + os.path.basename(inputLayer)
