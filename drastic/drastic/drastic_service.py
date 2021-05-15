@@ -10,6 +10,7 @@ from recharge.recharge import Recharge
 from aquifer.aquifer import Aquifer
 from soil_media.soil_media import SoilMedia
 from impact_zone.impact_zone import ImpactZone
+from topography.topography import Topography
 
 from shp.shp import Shp
 from pprint import pprint
@@ -155,6 +156,20 @@ def calculate_s():
         field = data["field"]
         soil_media = SoilMedia(input_file, output_file, 30, field, ratings)
         soil_media.calculate(process_path)
+    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
+@app.route('/drastic/t/calculate', methods=['POST'])
+def calculate_t():
+    if request.method == 'POST':
+        input_file = settings.DRASTIC_DATA_FOLDER_T_INPUT + "t.sdat"
+        process_path = settings.DRASTIC_DATA_FOLDER_T_PROCESS
+        output_file = settings.DRASTIC_DATA_FOLDER_T_RESULT + "t.tif"
+        data =  json.loads(request.form["data"])
+        ratings = data["ratings"]
+        topography = Topography(input_file, output_file, 30, ratings)
+        topography.calculate(process_path)
     response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
