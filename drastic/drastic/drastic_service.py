@@ -11,6 +11,7 @@ from aquifer.aquifer import Aquifer
 from soil_media.soil_media import SoilMedia
 from impact_zone.impact_zone import ImpactZone
 from topography.topography import Topography
+from hidraulic_conductivity.hidraulic_conductivity import HidraulicConductivity
 
 from shp.shp import Shp
 from pprint import pprint
@@ -185,6 +186,21 @@ def calculate_i():
         field = data["field"]
         impact_zone = ImpactZone(input_file, output_file, 30, field, ratings)
         impact_zone.calculate(process_path)
+    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
+@app.route('/drastic/c/calculate', methods=['POST'])
+def calculate_c():
+    if request.method == 'POST':
+        input_file = settings.DRASTIC_DATA_FOLDER_C_INPUT + "c.shp"
+        process_path = settings.DRASTIC_DATA_FOLDER_C_PROCESS
+        output_file = settings.DRASTIC_DATA_FOLDER_C_RESULT + "c.tif"
+        data =  json.loads(request.form["data"])
+        ratings = data["ratings"]
+        field = data["field"]
+        hidraulic_conductivity = HidraulicConductivity(input_file, output_file, 30, field, ratings)
+        hidraulic_conductivity.calculate(process_path)
     response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
