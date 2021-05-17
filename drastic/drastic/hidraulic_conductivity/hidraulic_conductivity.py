@@ -69,11 +69,14 @@ class HidraulicConductivity:
         #                         'RNEW': 2, 'ROPERATOR': 0, 'RETAB': results, 'TOPERATOR': 0, 'NODATAOPT': True,
         #                         'NODATA': 0,
         #                         'OTHEROPT': True, 'OTHERS': 0, 'RESULT': outPath})
-
+        calculate = process_path + "/result.tif"
         Processing.runAlgorithm("native:reclassifybytable",
                                     {'INPUT_RASTER': conductivity,
                                      'RASTER_BAND': 1, 'TABLE': results,
                                      'NO_DATA': -9999, 'RANGE_BOUNDARIES': 0, 'NODATA_FOR_MISSING': False,
                                      'DATA_TYPE': 5,
-                                     'OUTPUT': outPath})
+                                     'OUTPUT': calculate})
+                                     
+        out_raster = gdal.Open(calculate)
+        gdal.Warp(outPath, out_raster, dstSRS="EPSG:3857")
 

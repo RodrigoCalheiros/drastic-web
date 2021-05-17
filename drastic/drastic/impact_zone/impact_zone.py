@@ -133,7 +133,7 @@ class ImpactZone:
         parameter_indexes = field_names_new[newFieldIndex]
         
         Processing.initialize()
-        calculate = process_path + "/calculate.tif"
+        calculate = process_path + "/result.tif"
         #aquifer = QFileInfo(QgsApplication.qgisUserDbFilePath()).path() + "/aquifer"
         Processing.runAlgorithm("grass7:v.to.rast", {'input': inputLayer, 'type': [0, 1, 3], 'where': '', 'use': 0,
                                                      'attribute_column': parameter_indexes, 'rgb_column': None,
@@ -145,4 +145,4 @@ class ImpactZone:
                                                      'GRASS_MIN_AREA_PARAMETER': 0.0001})
 
         out_raster = gdal.Open(calculate)
-        gdal.Warp(outPath, out_raster, dstSRS="EPSG:3763")
+        gdal.Warp(outPath, out_raster, dstSRS="EPSG:3857")

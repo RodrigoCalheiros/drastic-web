@@ -125,10 +125,13 @@ class Topography:
         #results = list(map(int, lista))
 
         #QMessageBox.about(self, "Topography", str(userSlope_dem))
-
+        calculate = process_path + "/result.tif"
         Processing.runAlgorithm("native:reclassifybytable",
                                     {'INPUT_RASTER': str(userSlope_dem),
                                      'RASTER_BAND': 1, 'TABLE': lista_table,
                                      'NO_DATA': -9999, 'RANGE_BOUNDARIES': 0, 'NODATA_FOR_MISSING': False,
                                      'DATA_TYPE': 5,
-                                     'OUTPUT': outPath})
+                                     'OUTPUT': calculate})
+
+        out_raster = gdal.Open(calculate)
+        gdal.Warp(outPath, out_raster, dstSRS="EPSG:3857")

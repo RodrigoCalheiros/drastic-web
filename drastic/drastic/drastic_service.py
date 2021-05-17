@@ -12,6 +12,7 @@ from soil_media.soil_media import SoilMedia
 from impact_zone.impact_zone import ImpactZone
 from topography.topography import Topography
 from hidraulic_conductivity.hidraulic_conductivity import HidraulicConductivity
+from drastic.drastic import Drastic
 
 from shp.shp import Shp
 from pprint import pprint
@@ -201,6 +202,34 @@ def calculate_c():
         field = data["field"]
         hidraulic_conductivity = HidraulicConductivity(input_file, output_file, 30, field, ratings)
         hidraulic_conductivity.calculate(process_path)
+    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
+@app.route('/drastic/drastic/calculate', methods=['POST'])
+def calculate_drastic():
+    if request.method == 'POST':
+        input_file_d = settings.DRASTIC_DATA_FOLDER_D_RESULT + "d.tif"
+        input_file_r = settings.DRASTIC_DATA_FOLDER_R_RESULT + "r.tif"
+        input_file_a = settings.DRASTIC_DATA_FOLDER_A_RESULT + "a.tif"
+        input_file_s = settings.DRASTIC_DATA_FOLDER_S_RESULT + "s.tif"
+        input_file_t = settings.DRASTIC_DATA_FOLDER_T_RESULT + "t.tif"
+        input_file_i = settings.DRASTIC_DATA_FOLDER_I_RESULT + "i.tif"
+        input_file_c = settings.DRASTIC_DATA_FOLDER_C_RESULT + "c.tif"
+        process_path = settings.DRASTIC_DATA_FOLDER_DRASTIC_PROCESS
+        output_file = settings.DRASTIC_DATA_FOLDER_DRASTIC_RESULT + "drastic.tif"
+
+        data =  json.loads(request.form["data"])
+        weight_d = data["weight_d"]
+        weight_r = data["weight_r"]
+        weight_a = data["weight_a"]
+        weight_s = data["weight_s"]
+        weight_t = data["weight_t"]
+        weight_i = data["weight_i"]
+        weight_c = data["weight_c"]
+
+        drastic = Drastic(input_file_d, input_file_r, input_file_a, input_file_s, input_file_t, input_file_i, input_file_c, weight_d, weight_r, weight_a, weight_s, weight_t, weight_i, weight_c, output_file, 30)
+        drastic.calculate(process_path)
     response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
