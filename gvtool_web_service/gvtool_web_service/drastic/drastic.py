@@ -100,8 +100,8 @@ class Drastic:
         #
         # geo = gdalRaster.GetGeoTransform()
         # # pixel size
-        #pixelSize = geo[1]
-        pixelSize = 30
+        pixelSize = geo[1]
+        #pixelSize = 30
         # extent
         minx = geo[0]
         maxy = geo[3]
@@ -568,8 +568,7 @@ class Drastic:
         # Processing.runAlgorithm("grass7:r.mapcalc.simple", {
         #     'GRIDS': resamp_d,
         #     'XGRIDS': [resamp_r,resamp_a,resamp_s,resamp_t,resamp_i, resamp_c],
-        #     'FORMULA': 'a*' + str(self.lineWeightD.value()) + '+b*' + str(self.lineWeightR.value()) + '+c*' + str(self.lineWeightA.value()) + '+d*' + str(self.lineWeightS.value()) + '+e*' + str(self.lineWeightT.value()) + '+f*' + str(self.lineWeightI.value()), 'RESAMPLING':3, 'USE_NODATA': False, 'TYPE': 7, 'RESULT': drasti})
-        print("oi")
+        #     'FORMULA': 'a*' + str(self.lineWeightD.value()) + '+b*' + str(self.lineWeightR.value()) + '+c*' + str(self.lineWeightA.value()) + '+d*' + str(self.lineWeightS.value()) + '+e*' + str(self.lineWeightT.value()) + '+f*' + str(self.lineWeightI.value()), 'RESAMPLING':3, 'USE_NODATA': False, 'TYPE': 7, 'RESULT': drasti}
         Processing.runAlgorithm("grass7:r.mapcalc.simple", {
             'a': resamp_d,
             'b': resamp_r, 
