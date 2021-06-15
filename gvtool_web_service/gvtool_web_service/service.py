@@ -32,8 +32,8 @@ from pprint import pprint
 
 app = Flask(__name__)
 
-@app.route('/drastic/upload/<variable>', methods=['POST'])
-def upload_file(variable):
+@app.route('/file/upload/<algoritm>/<variable>', methods=['POST'])
+def upload_file(algoritm, variable):
     if request.method == 'POST':
         print(request.files)
         # check if the post request has the file part
@@ -54,26 +54,46 @@ def upload_file(variable):
         
         file = File(request_file)
         #file.unzip(settings.DRASTIC_DATA_FOLDER_D_INPUT)
-        #response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+        #response = Response('{"msg":"Sucess"}', status=200, mimetype='application/json')
         #response.headers.add('Access-Control-Allow-Origin', '*')
         #return response
 
         if request_file and file.allowed_file(settings.ALLOWED_EXTENSIONS):
-            if variable == 'd':
-                file.save(settings.DRASTIC_DATA_D_INPUT, variable)
-            elif variable == 'r':
-                file.save(settings.DRASTIC_DATA_R_INPUT, variable)
-            elif variable == 'a':
-                file.save(settings.DRASTIC_DATA_A_INPUT, variable)
-            elif variable == 's':
-                file.save(settings.DRASTIC_DATA_S_INPUT, variable)
-            elif variable == 't':
-                file.save(settings.DRASTIC_DATA_T_INPUT, variable)
-            elif variable == 'i':
-                file.save(settings.DRASTIC_DATA_I_INPUT, variable)
-            elif variable == 'c':
-                file.save(settings.DRASTIC_DATA_C_INPUT, variable)
-            response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+            if algoritm == 'drastic':
+                if variable == 'd':
+                    file.save(settings.DRASTIC_DATA_D_FOLDER_INPUT, variable)
+                elif variable == 'r':
+                    file.save(settings.DRASTIC_DATA_R_FOLDER_INPUT, variable)
+                elif variable == 'a':
+                    file.save(settings.DRASTIC_DATA_A_FOLDER_INPUT, variable)
+                elif variable == 's':
+                    file.save(settings.DRASTIC_DATA_S_FOLDER_INPUT, variable)
+                elif variable == 't':
+                    file.save(settings.DRASTIC_DATA_T_FOLDER_INPUT, variable)
+                elif variable == 'i':
+                    file.save(settings.DRASTIC_DATA_I_FOLDER_INPUT, variable)
+                elif variable == 'c':
+                    file.save(settings.DRASTIC_DATA_C_FOLDER_INPUT, variable)
+            elif algoritm == 'god':
+                if variable == 'g':
+                    file.save(settings.GOD_DATA_G_FOLDER_INPUT, variable)
+                elif variable == 'o':
+                    file.save(settings.GOD_DATA_O_FOLDER_INPUT, variable)
+                elif variable == 'd':
+                    file.save(settings.GOD_DATA_D_FOLDER_INPUT, variable)
+            elif algoritm == 'si':
+                if variable == 'g':
+                    file.save(settings.SI_DATA_G_FOLDER_INPUT, variable)
+                elif variable == 'r':
+                    file.save(settings.SI_DATA_R_FOLDER_INPUT, variable)
+                elif variable == 'a':
+                    file.save(settings.SI_DATA_A_FOLDER_INPUT, variable)
+                elif variable == 't':
+                    file.save(settings.SI_DATA_T_FOLDER_INPUT, variable)
+                elif variable == 'lu':
+                    file.save(settings.SI_DATA_LU_FOLDER_INPUT, variable)
+
+            response = Response('{"msg":"Sucess"}', status=200, mimetype='application/json')
             response.headers.add('Access-Control-Allow-Origin', '*')
             return response
 
@@ -125,7 +145,7 @@ def calculate_d():
         ratings = data["ratings"]
         depth = DepthGroundWather(input_file, output_file, max_depth, distance, min_size, ratings)
         depth.convert_mdt(process_path)
-    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response = Response('{"msg":"Sucess"}', status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
@@ -140,7 +160,7 @@ def calculate_r():
         ratings = data["ratings"]
         recharge = Recharge(input_file, output_file, ratings)
         recharge.convert_mdt(process_path)
-    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response = Response('{"msg":"Sucess"}', status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
@@ -155,7 +175,7 @@ def calculate_a():
         field = data["field"]
         aquifer = Aquifer(input_file, output_file, 30, field, ratings)
         aquifer.convert_mdt(process_path)
-    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response = Response('{"msg":"Sucess"}', status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
@@ -170,7 +190,7 @@ def calculate_s():
         field = data["field"]
         soil_media = SoilMedia(input_file, output_file, 30, field, ratings)
         soil_media.calculate(process_path)
-    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response = Response('{"msg":"Sucess"}', status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
@@ -184,7 +204,7 @@ def calculate_t():
         ratings = data["ratings"]
         topography = Topography(input_file, output_file, 30, ratings)
         topography.calculate(process_path)
-    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response = Response('{"msg":"Sucess"}', status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
@@ -199,7 +219,7 @@ def calculate_i():
         field = data["field"]
         impact_zone = ImpactZone(input_file, output_file, 30, field, ratings)
         impact_zone.calculate(process_path)
-    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response = Response('{"msg":"Sucess"}', status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
@@ -214,7 +234,7 @@ def calculate_c():
         field = data["field"]
         hidraulic_conductivity = HidraulicConductivity(input_file, output_file, 30, field, ratings)
         hidraulic_conductivity.calculate(process_path)
-    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response = Response('{"msg":"Sucess"}', status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
@@ -242,7 +262,7 @@ def calculate_drastic():
 
         drastic = Drastic(input_file_d, input_file_r, input_file_a, input_file_s, input_file_t, input_file_i, input_file_c, weight_d, weight_r, weight_a, weight_s, weight_t, weight_i, weight_c, output_file, 30)
         drastic.calculate(process_path)
-    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response = Response('{"msg":"Sucess"}', status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
@@ -257,7 +277,7 @@ def calculate_god_g():
         field = data["field"]
         groundwater_occurrence = GroundwaterOccurrence(input_file, output_file, 30, field, ratings)
         groundwater_occurrence.calculate(process_path)
-    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response = Response('{"msg":"Sucess"}', status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
@@ -272,7 +292,7 @@ def calculate_god_o():
         field = data["field"]
         overall_lithology = OverallLithology(input_file, output_file, 30, field, ratings)
         overall_lithology.calculate(process_path)
-    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response = Response('{"msg":"Sucess"}', status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
@@ -289,7 +309,7 @@ def calculate_god_d():
         ratings = data["ratings"]
         depth = GodDepthGroundWater(input_file, output_file, max_depth, distance, min_size, ratings)
         depth.calculate(process_path)
-    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response = Response('{"msg":"Sucess"}', status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
@@ -304,7 +324,7 @@ def calculate_god():
 
         god = God(input_file_g, input_file_o, input_file_d, output_file, 30)
         god.calculate(process_path)
-    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response = Response('{"msg":"Sucess"}', status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
@@ -321,7 +341,7 @@ def calculate_si_g():
         ratings = data["ratings"]
         depth = SiDepthGroundWater(input_file, output_file, max_depth, distance, min_size, ratings)
         depth.calculate(process_path)
-    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response = Response('{"msg":"Sucess"}', status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
@@ -335,7 +355,7 @@ def calculate_si_r():
         ratings = data["ratings"]
         recharge = SiRecharge(input_file, output_file, ratings)
         recharge.calculate(process_path)
-    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response = Response('{"msg":"Sucess"}', status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
@@ -350,7 +370,7 @@ def calculate_si_a():
         field = data["field"]
         aquifer_lithology = SiAquiferLithology(input_file, output_file, 30, field, ratings)
         aquifer_lithology.calculate(process_path)
-    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response = Response('{"msg":"Sucess"}', status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
@@ -364,7 +384,7 @@ def calculate_si_t():
         ratings = data["ratings"]
         topography = SiTopography(input_file, output_file, 30, ratings)
         topography.calculate(process_path)
-    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response = Response('{"msg":"Sucess"}', status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
@@ -379,7 +399,7 @@ def calculate_si_lu():
         field = data["field"]
         land_use = SiLandUse(input_file, output_file, 30, field, ratings)
         land_use.calculate(process_path)
-    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response = Response('{"msg":"Sucess"}', status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
@@ -403,6 +423,6 @@ def calculate_si():
 
         si = Si(input_file_g, input_file_r, input_file_a, input_file_t, input_file_lu, weight_g, weight_r, weight_a, weight_t, weight_lu, output_file, 30)
         si.calculate(process_path)
-    response = Response("{'msg': 'Sucess'", status=200, mimetype='application/json')
+    response = Response('{"msg":"Sucess"}', status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
