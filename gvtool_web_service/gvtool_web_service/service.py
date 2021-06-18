@@ -26,6 +26,8 @@ from si.topography.topography import Topography as SiTopography
 from si.land_use.land_use import LandUse as SiLandUse
 from si.si import Si
 
+from raster.raster import Raster
+
 
 from shp.shp import Shp
 from pprint import pprint
@@ -131,6 +133,18 @@ def get_shp_value(variable):
     response = Response(json.dumps(dataresponse), status=200, mimetype='application/json')
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
+
+@app.route('/gvtool/raster/statistcs/<algorithm>/<variable>', methods=['GET'])
+def get_raster_statistcs(algorithm, variable):
+    values = {}
+    if request.method == 'GET':
+        raster = Raster()
+        values = raster.get_statistcs(settings.DRASTIC_DATA_D_RESULT + "/d.tif")
+    dataresponse =  {"msg": "Sucess", "data": values }
+    response = Response(json.dumps(dataresponse), status=200, mimetype='application/json')
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
 
 @app.route('/drastic/d/calculate', methods=['POST'])
 def calculate_d():
